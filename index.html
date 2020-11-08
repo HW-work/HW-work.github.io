@@ -11,7 +11,20 @@
 <script type="text/javascript">
 	
     var customer_arr = [];
-    var store_arr = []
+    var store_arr = [];
+    var dict = {}; //store dictionary
+
+    function createDict(){
+        //add store locations to dict
+        for (var i = 0; i < store_arr.length; i++) {
+            var name = store_arr[i].split(" ")[2];
+            if(dict[name] === undefined){
+                dict[name] = [i];
+            }else{
+                dict[name].push(i)
+            }
+        }
+    }   
     
     var lat            = 37.7565;
     var lon            = -122.4507;
@@ -33,6 +46,7 @@
     var offset = new OpenLayers.Pixel(-6, -6);
     var icon1 = new OpenLayers.Icon('img/marker-blue.png', size, offset);
     var icon2 = new OpenLayers.Icon('img/marker.png', size, offset);
+    var icon3 = new OpenLayers.Icon('img/marker-gold.png', size, offset);
 
     function addCustomer(){
         var arr = customer_arr;
@@ -47,13 +61,22 @@
 
     function addStore(){
         var arr = store_arr;
-    //add store locations from the input file
+        //add store locations from the input file
         for (var i = 0; i < arr.length; i++) {
             var lat = arr[i].split(" ")[1];
             var lon = arr[i].split(" ")[0];
             var position1 = new OpenLayers.LonLat(lon, lat).transform(fromProjection, toProjection);
             markers.addMarker(new OpenLayers.Marker(position1, icon2.clone()));
         }
+
+        var div = document.createElement("div");
+        div.style.width = "1000px";
+        div.style.height = "40px";
+        div.style.background = "white";
+        div.style.color = "black";
+        div.innerHTML = JSON.stringify(Object.keys(dict));
+
+        document.getElementById("stores").appendChild(div);
     }  
 
     function randomNum(maxNum, minNum, decimalNum){
@@ -83,11 +106,28 @@
         var position = new OpenLayers.LonLat(lon, lat).transform(fromProjection, toProjection);
         markers.addMarker(new OpenLayers.Marker(position, icon1.clone()));
 
-        id = Math.floor(Math.random() * store_arr.length)
+        var warehouses = Object.keys(dict);
+        const random = Math.floor(Math.random() * warehouses.length);
+        var select_warehouse = warehouses[random]
+        var dict_stores = dict[select_warehouse]
+        const store_idx = Math.floor(Math.random() * dict_stores.length);
+        var select_store = dict_stores[store_idx]
+
+        var div = document.createElement("div");
+        div.style.width = "500px";
+        div.style.height = "20px";
+        div.style.background = "white";
+        div.style.color = "blue";
+        div.innerHTML = 'Random a store from warehouse: ' + select_warehouse;
+
+
+        id = select_store
         var lat = store_arr[id].split(" ")[1];
         var lon = store_arr[id].split(" ")[0];
         var position = new OpenLayers.LonLat(lon, lat).transform(fromProjection, toProjection);
-        markers.addMarker(new OpenLayers.Marker(position, icon2.clone()));
+        markers.addMarker(new OpenLayers.Marker(position, icon3.clone()));
+
+        document.getElementById("order").appendChild(div);
 
 
     }
@@ -121,6 +161,7 @@
             success: function(data) {
                 console.log(data);
                 store_arr = data.split("\n");
+                createDict();
             }
         });
 	});
@@ -133,5 +174,7 @@
 <button id="generate_store" onclick='addStore()'>Generate Store</button>
 <button onClick="window.location.reload();">Reset</button>
 <button id="random_order" onclick='randomOrder()'>Random Order</button>
+<div id="stores"></div>
+<div id="order"></div>
 </body>
 </html>
