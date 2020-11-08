@@ -17,7 +17,8 @@
     function createDict(){
         //add store locations to dict
         for (var i = 0; i < store_arr.length; i++) {
-            var name = store_arr[i].split(" ")[2];
+            var name = store_arr[i].split(" ").slice(2).join(' ');
+		
             if(dict[name] === undefined){
                 dict[name] = [i];
             }else{
