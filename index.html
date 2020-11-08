@@ -1,0 +1,137 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>OpenLayers Simplest Example</title>
+</head>
+<body>
+<div id="Map" style="height:400px;width:700pt"></div>
+<script src="OpenLayers.js"></script>
+<script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+
+<script type="text/javascript">
+	
+    var customer_arr = [];
+    var store_arr = []
+    
+    var lat            = 37.7565;
+    var lon            = -122.4507;
+    var zoom           = 12.4;
+
+    var fromProjection = new OpenLayers.Projection("EPSG:4326");   // Transform from WGS 1984
+    var toProjection   = new OpenLayers.Projection("EPSG:900913"); // to Spherical Mercator Projection
+    var position       = new OpenLayers.LonLat(lon, lat).transform(fromProjection, toProjection);
+   
+
+    map = new OpenLayers.Map("Map");
+    var mapnik = new OpenLayers.Layer.OSM();
+    map.addLayer(mapnik);
+    var markers = new OpenLayers.Layer.Markers( "Markers" );
+    map.addLayer(markers);
+
+
+    var size = new OpenLayers.Size(12,12);
+    var offset = new OpenLayers.Pixel(-6, -6);
+    var icon1 = new OpenLayers.Icon('img/marker-blue.png', size, offset);
+    var icon2 = new OpenLayers.Icon('img/marker.png', size, offset);
+
+    function addCustomer(){
+        var arr = customer_arr;
+        //add store locations from the input file
+        for (var i = 0; i < 1000; i++) {
+            var lat = arr[i].split(" ")[1];
+            var lon = arr[i].split(" ")[0];
+            var position1 = new OpenLayers.LonLat(lon, lat).transform( fromProjection, toProjection);
+            markers.addMarker(new OpenLayers.Marker(position1, icon1.clone()));
+        }
+    }   
+
+    function addStore(){
+        var arr = store_arr;
+    //add store locations from the input file
+        for (var i = 0; i < arr.length; i++) {
+            var lat = arr[i].split(" ")[1];
+            var lon = arr[i].split(" ")[0];
+            var position1 = new OpenLayers.LonLat(lon, lat).transform(fromProjection, toProjection);
+            markers.addMarker(new OpenLayers.Marker(position1, icon2.clone()));
+        }
+    }  
+
+    function randomNum(maxNum, minNum, decimalNum){
+        var max = 0, min = 0;
+        minNum <= maxNum ? (min = minNum, max = maxNum) : (min = maxNum, max = minNum);
+        switch (arguments.length) {
+            case 1:
+                return Math.floor(Math.random() * (max + 1));
+                break;
+            case 2:
+                return Math.floor(Math.random() * (max - min + 1) + min);
+                break;
+            case 3:
+                return (Math.random() * (max - min) + min).toFixed(decimalNum);
+                break;
+            default:
+                return Math.random();
+                break;
+        }
+    }
+
+    function randomOrder(){
+
+        id = Math.floor(Math.random() * customer_arr.length)
+        var lat = customer_arr[id].split(" ")[1];
+        var lon = customer_arr[id].split(" ")[0];
+        var position = new OpenLayers.LonLat(lon, lat).transform(fromProjection, toProjection);
+        markers.addMarker(new OpenLayers.Marker(position, icon1.clone()));
+
+        id = Math.floor(Math.random() * store_arr.length)
+        var lat = store_arr[id].split(" ")[1];
+        var lon = store_arr[id].split(" ")[0];
+        var position = new OpenLayers.LonLat(lon, lat).transform(fromProjection, toProjection);
+        markers.addMarker(new OpenLayers.Marker(position, icon2.clone()));
+
+
+    }
+
+    function addOrder(){
+    //add order locations
+        for (i = 0; i < 10; i++) {
+            var lat = randomNum(37.7319244, 37.7883162, 7)
+            var lon = randomNum(-122.5003524, -122.4007127, 7)
+            var position1 = new OpenLayers.LonLat(lon, lat).transform( fromProjection, toProjection);
+            markers.addMarker(new OpenLayers.Marker(position1));
+        }
+    }
+
+    map.setCenter(position, zoom);
+
+	$(function () {
+		$.ajax({
+			type: "GET",
+			url: "customers.txt",
+			dataType: "text",
+			success: function(data) {
+                console.log(data);
+                customer_arr = data.split("\n");
+			}
+		});
+        $.ajax({
+            type: "GET",
+            url: "stores.txt",
+            dataType: "text",
+            success: function(data) {
+                console.log(data);
+                store_arr = data.split("\n");
+            }
+        });
+	});
+
+</script>
+<script language="javascript">  
+
+</script>
+<button id="generate_customer" onclick="addCustomer()">Generate Customer</button>
+<button id="generate_store" onclick='addStore()'>Generate Store</button>
+<button onClick="window.location.reload();">Reset</button>
+<button id="random_order" onclick='randomOrder()'>Random Order</button>
+</body>
+</html>
